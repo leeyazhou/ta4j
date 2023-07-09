@@ -11,7 +11,7 @@ Ta4j is an open source Java library for [technical analysis](http://en.wikipedia
 
 ### Features
 
- * [x] 100% Pure Java - works on any Java Platform version 8 or later
+ * [x] 100% Pure Java - works on any Java Platform version 11 or later
  * [x] More than 130 technical indicators (Aroon, ATR, moving averages, parabolic SAR, RSI, etc.)
  * [x] A powerful engine for building custom trading strategies
  * [x] Utilities to run and compare strategies
@@ -65,7 +65,7 @@ Here are some ways for you to contribute to ta4j:
   * [Fork this repository](http://help.github.com/forking/) and submit pull requests.
   * Take a look at [How to contribute](https://ta4j.github.io/ta4j-wiki/How-to-contribute)
 
-See also: the [contribution policy](.github/CONTRIBUTING.md) and [Code of Cunduct](CODE_OF_CONDUCT.md)
+See also: the [contribution policy](.github/CONTRIBUTING.md) and [Code of Conduct](CODE_OF_CONDUCT.md)
 
 &nbsp;
 &nbsp;

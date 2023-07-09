@@ -1,7 +1,7 @@
 /**
  * The MIT License (MIT)
  *
- * Copyright (c) 2017-2022 Ta4j Organization & respective
+ * Copyright (c) 2017-2023 Ta4j Organization & respective
  * authors (see AUTHORS)
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy of
@@ -30,15 +30,16 @@ import org.ta4j.core.TradingRecord;
 import org.ta4j.core.num.Num;
 
 /**
- * Enter and hold criterion.
+ * Enter and hold criterion, returned in decimal format.
  *
- * Calculates the return if a enter-and-hold strategy was used:
- * 
+ * <p>
+ * Calculates the gross return (in percent) of an enter-and-hold strategy:
+ *
  * <ul>
- * <li>For {@link #tradeType} = {@link TradeType#BUY}: buying on the first bar
- * and selling on the last bar.
- * <li>For {@link #tradeType} = {@link TradeType#SELL}: selling on the first bar
- * and buying on the last bar.
+ * <li>For {@link #tradeType} = {@link TradeType#BUY}: Buy with the close price
+ * of the first bar and sell with the close price of the last bar.
+ * <li>For {@link #tradeType} = {@link TradeType#SELL}: Sell with the close
+ * price of the first bar and buy with the close price of the last bar.
  * </ul>
  *
  * @see <a href=
@@ -49,8 +50,8 @@ public class EnterAndHoldReturnCriterion extends AbstractAnalysisCriterion {
     private final TradeType tradeType;
 
     /**
-     * Constructor
-     * 
+     * Constructor.
+     *
      * <p>
      * For buy-and-hold strategy.
      */
@@ -60,7 +61,7 @@ public class EnterAndHoldReturnCriterion extends AbstractAnalysisCriterion {
 
     /**
      * Constructor.
-     * 
+     *
      * @param tradeType the {@link TradeType} used to open the position
      */
     public EnterAndHoldReturnCriterion(TradeType tradeType) {
@@ -69,13 +70,16 @@ public class EnterAndHoldReturnCriterion extends AbstractAnalysisCriterion {
 
     @Override
     public Num calculate(BarSeries series, Position position) {
-        return createEnterAndHoldTrade(series, position.getEntry().getIndex(), position.getExit().getIndex())
-                .getGrossReturn(series);
+        int beginIndex = position.getEntry().getIndex();
+        int endIndex = series.getEndIndex();
+        return createEnterAndHoldTrade(series, beginIndex, endIndex).getGrossReturn(series);
     }
 
     @Override
     public Num calculate(BarSeries series, TradingRecord tradingRecord) {
-        return createEnterAndHoldTrade(series).getGrossReturn(series);
+        int beginIndex = tradingRecord.getStartIndex(series);
+        int endIndex = tradingRecord.getEndIndex(series);
+        return createEnterAndHoldTrade(series, beginIndex, endIndex).getGrossReturn(series);
     }
 
     /** The higher the criterion value the better. */
@@ -84,14 +88,10 @@ public class EnterAndHoldReturnCriterion extends AbstractAnalysisCriterion {
         return criterionValue1.isGreaterThan(criterionValue2);
     }
 
-    private Position createEnterAndHoldTrade(BarSeries series) {
-        return createEnterAndHoldTrade(series, series.getBeginIndex(), series.getEndIndex());
-    }
-
     private Position createEnterAndHoldTrade(BarSeries series, int beginIndex, int endIndex) {
         Position position = new Position(this.tradeType);
-        position.operate(beginIndex, series.getBar(beginIndex).getClosePrice(), series.numOf(1));
-        position.operate(endIndex, series.getBar(endIndex).getClosePrice(), series.numOf(1));
+        position.operate(beginIndex, series.getBar(beginIndex).getClosePrice(), series.one());
+        position.operate(endIndex, series.getBar(endIndex).getClosePrice(), series.one());
         return position;
     }
 }

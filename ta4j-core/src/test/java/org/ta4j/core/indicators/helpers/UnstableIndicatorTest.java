@@ -1,7 +1,7 @@
 /**
  * The MIT License (MIT)
  *
- * Copyright (c) 2017-2022 Ta4j Organization & respective
+ * Copyright (c) 2017-2023 Ta4j Organization & respective
  * authors (see AUTHORS)
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy of
@@ -21,22 +21,49 @@
  * IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN
  * CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
  */
-package org.ta4j.core.criteria.pnl;
+package org.ta4j.core.indicators.helpers;
+
+import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertNotEquals;
 
 import java.util.function.Function;
 
+import org.junit.Before;
 import org.junit.Test;
-import org.ta4j.core.criteria.AbstractCriterionTest;
+import org.ta4j.core.Indicator;
+import org.ta4j.core.indicators.AbstractIndicatorTest;
+import org.ta4j.core.mocks.MockBarSeries;
+import org.ta4j.core.num.NaN;
 import org.ta4j.core.num.Num;
 
-public class GrossLossCriterionTest extends AbstractCriterionTest {
+public class UnstableIndicatorTest extends AbstractIndicatorTest<Indicator<Num>, Num> {
 
-    public GrossLossCriterionTest(Function<Number, Num> numFunction) {
-        super((params) -> new GrossProfitCriterion(), numFunction);
+    private int unstableBars;
+    private UnstableIndicator unstableIndicator;
+
+    public UnstableIndicatorTest(Function<Number, Num> numFunction) {
+        super(numFunction);
+    }
+
+    @Before
+    public void setUp() {
+        unstableBars = 5;
+        unstableIndicator = new UnstableIndicator(new ClosePriceIndicator(new MockBarSeries(numFunction)),
+                unstableBars);
     }
 
     @Test
-    public void testCalculateOneOpenPositionShouldReturnZero() {
-        openedPositionUtils.testCalculateOneOpenPositionShouldReturnExpectedValue(numFunction, getCriterion(), 0);
+    public void indicatorReturnsNanBeforeUnstableBars() {
+        for (int i = 0; i < unstableBars; i++) {
+            assertEquals(unstableIndicator.getValue(i), NaN.NaN);
+        }
     }
+
+    @Test
+    public void indicatorNotReturnsNanAfterUnstableBars() {
+        for (int i = unstableBars; i < 10; i++) {
+            assertNotEquals(unstableIndicator.getValue(i), NaN.NaN);
+        }
+    }
+
 }

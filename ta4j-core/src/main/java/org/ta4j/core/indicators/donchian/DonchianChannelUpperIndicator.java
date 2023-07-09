@@ -1,7 +1,7 @@
 /**
  * The MIT License (MIT)
  *
- * Copyright (c) 2017-2022 Ta4j Organization & respective
+ * Copyright (c) 2017-2023 Ta4j Organization & respective
  * authors (see AUTHORS)
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy of
@@ -21,45 +21,48 @@
  * IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN
  * CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
  */
-package org.ta4j.core.criteria.pnl;
+package org.ta4j.core.indicators.donchian;
 
 import org.ta4j.core.BarSeries;
-import org.ta4j.core.Position;
-import org.ta4j.core.TradingRecord;
-import org.ta4j.core.criteria.AbstractAnalysisCriterion;
+import org.ta4j.core.indicators.CachedIndicator;
+import org.ta4j.core.indicators.helpers.HighPriceIndicator;
+import org.ta4j.core.indicators.helpers.HighestValueIndicator;
 import org.ta4j.core.num.Num;
 
 /**
- * Net loss criterion (excludes trading costs).
- *
- * <p>
- * The net loss of the provided {@link Position position(s)} over the provided
- * {@link BarSeries series}.
+ * * https://www.investopedia.com/terms/d/donchianchannels.asp
  */
-public class NetLossCriterion extends AbstractAnalysisCriterion {
+public class DonchianChannelUpperIndicator extends CachedIndicator<Num> {
 
-    @Override
-    public Num calculate(BarSeries series, Position position) {
-        if (position.isClosed()) {
-            Num loss = position.getProfit();
-            return loss.isNegative() ? loss : series.numOf(0);
-        }
-        return series.numOf(0);
+    private final int barCount;
+    private final HighPriceIndicator highPrice;
+    private final HighestValueIndicator highestPrice;
 
+    /**
+     * Constructor.
+     * 
+     * @param series   the bar series
+     * @param barCount the time frame
+     */
+    public DonchianChannelUpperIndicator(BarSeries series, int barCount) {
+        super(series);
+        this.barCount = barCount;
+        this.highPrice = new HighPriceIndicator(series);
+        this.highestPrice = new HighestValueIndicator(this.highPrice, barCount);
     }
 
     @Override
-    public Num calculate(BarSeries series, TradingRecord tradingRecord) {
-        return tradingRecord.getPositions()
-                .stream()
-                .filter(Position::isClosed)
-                .map(position -> calculate(series, position))
-                .reduce(series.numOf(0), Num::plus);
+    protected Num calculate(int index) {
+        return this.highestPrice.getValue(index);
     }
 
-    /** The higher the criterion value, the better. */
     @Override
-    public boolean betterThan(Num criterionValue1, Num criterionValue2) {
-        return criterionValue1.isGreaterThan(criterionValue2);
+    public int getUnstableBars() {
+        return barCount;
+    }
+
+    @Override
+    public String toString() {
+        return getClass().getSimpleName() + "barCount: " + barCount;
     }
 }

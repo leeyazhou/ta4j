@@ -1,7 +1,7 @@
 /**
  * The MIT License (MIT)
  *
- * Copyright (c) 2017-2022 Ta4j Organization & respective
+ * Copyright (c) 2017-2023 Ta4j Organization & respective
  * authors (see AUTHORS)
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy of
@@ -69,7 +69,6 @@ public class MaximumDrawdownCriterionTest extends AbstractCriterionTest {
                 Trade.buyAt(3, series), Trade.sellAt(4, series), Trade.buyAt(5, series), Trade.sellAt(6, series));
 
         assertNumEquals(.875d, mdd.calculate(series, tradingRecord));
-
     }
 
     @Test

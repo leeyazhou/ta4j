@@ -1,7 +1,7 @@
 /**
  * The MIT License (MIT)
  *
- * Copyright (c) 2017-2022 Ta4j Organization & respective
+ * Copyright (c) 2017-2023 Ta4j Organization & respective
  * authors (see AUTHORS)
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy of
@@ -57,14 +57,15 @@ public class AroonDownIndicator extends CachedIndicator<Num> {
         super(lowPriceIndicator);
         this.barCount = barCount;
         this.lowPriceIndicator = lowPriceIndicator;
-        this.hundred = numOf(100);
+        this.hundred = hundred();
         this.barCountNum = numOf(barCount);
         // + 1 needed for last possible iteration in loop
         this.lowestLowPriceIndicator = new LowestValueIndicator(lowPriceIndicator, barCount + 1);
     }
 
     /**
-     * Default Constructor that is using the low price
+     * Default Constructor with {@code lowPriceIndicator} =
+     * {@link LowPriceIndicator}.
      *
      * @param series   the bar series
      * @param barCount the time frame
@@ -89,6 +90,11 @@ public class AroonDownIndicator extends CachedIndicator<Num> {
         }
 
         return numOf(barCount - nbBars).dividedBy(barCountNum).multipliedBy(hundred);
+    }
+
+    @Override
+    public int getUnstableBars() {
+        return barCount;
     }
 
     @Override

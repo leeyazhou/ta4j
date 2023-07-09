@@ -1,7 +1,7 @@
 /**
  * The MIT License (MIT)
  *
- * Copyright (c) 2017-2022 Ta4j Organization & respective
+ * Copyright (c) 2017-2023 Ta4j Organization & respective
  * authors (see AUTHORS)
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy of
@@ -21,45 +21,47 @@
  * IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN
  * CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
  */
-package org.ta4j.core.criteria.pnl;
+package org.ta4j.core.indicators.donchian;
 
 import org.ta4j.core.BarSeries;
-import org.ta4j.core.Position;
-import org.ta4j.core.TradingRecord;
-import org.ta4j.core.criteria.AbstractAnalysisCriterion;
+import org.ta4j.core.indicators.CachedIndicator;
 import org.ta4j.core.num.Num;
 
 /**
- * Net profit criterion (excludes trading costs).
- *
- * <p>
- * The net profit of the provided {@link Position position(s)} over the provided
- * {@link BarSeries series}.
+ * * https://www.investopedia.com/terms/d/donchianchannels.asp
  */
-public class NetProfitCriterion extends AbstractAnalysisCriterion {
+public class DonchianChannelMiddleIndicator extends CachedIndicator<Num> {
 
-    @Override
-    public Num calculate(BarSeries series, Position position) {
-        if (position.isClosed()) {
-            Num profit = position.getProfit();
-            return profit.isPositive() ? profit : series.numOf(0);
-        }
-        return series.numOf(0);
+    private final int barCount;
+    private final DonchianChannelLowerIndicator lower;
+    private final DonchianChannelUpperIndicator upper;
 
+    /**
+     * Constructor.
+     * 
+     * @param series   the bar series
+     * @param barCount the time frame
+     */
+    public DonchianChannelMiddleIndicator(BarSeries series, int barCount) {
+        super(series);
+        this.barCount = barCount;
+        this.lower = new DonchianChannelLowerIndicator(series, barCount);
+        this.upper = new DonchianChannelUpperIndicator(series, barCount);
     }
 
     @Override
-    public Num calculate(BarSeries series, TradingRecord tradingRecord) {
-        return tradingRecord.getPositions()
-                .stream()
-                .filter(Position::isClosed)
-                .map(position -> calculate(series, position))
-                .reduce(series.numOf(0), Num::plus);
+    protected Num calculate(int index) {
+        return (this.lower.getValue(index).plus(this.upper.getValue(index))).dividedBy(numOf(2));
     }
 
-    /** The higher the criterion value, the better. */
     @Override
-    public boolean betterThan(Num criterionValue1, Num criterionValue2) {
-        return criterionValue1.isGreaterThan(criterionValue2);
+    public int getUnstableBars() {
+        return barCount;
     }
+
+    @Override
+    public String toString() {
+        return getClass().getSimpleName() + "barCount: " + barCount;
+    }
+
 }

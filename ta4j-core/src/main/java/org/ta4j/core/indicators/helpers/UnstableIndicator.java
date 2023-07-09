@@ -1,7 +1,7 @@
 /**
  * The MIT License (MIT)
  *
- * Copyright (c) 2017-2022 Ta4j Organization & respective
+ * Copyright (c) 2017-2023 Ta4j Organization & respective
  * authors (see AUTHORS)
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy of
@@ -21,33 +21,43 @@
  * IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN
  * CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
  */
-package org.ta4j.core.indicators;
+package org.ta4j.core.indicators.helpers;
 
-import java.time.ZonedDateTime;
-import java.util.function.Function;
-
-import org.ta4j.core.Bar;
-import org.ta4j.core.BarSeries;
+import org.ta4j.core.Indicator;
+import org.ta4j.core.indicators.CachedIndicator;
+import org.ta4j.core.num.NaN;
+import org.ta4j.core.num.Num;
 
 /**
- * DateTime indicator.
+ * Indicator that returns {@link NaN#NaN NaN} in unstable bars.
  */
-public class DateTimeIndicator extends CachedIndicator<ZonedDateTime> {
+public class UnstableIndicator extends CachedIndicator<Num> {
 
-    private final Function<Bar, ZonedDateTime> action;
+    private final int unstableBars;
+    private final Indicator<Num> indicator;
 
-    public DateTimeIndicator(BarSeries barSeries) {
-        this(barSeries, Bar::getBeginTime);
-    }
-
-    public DateTimeIndicator(BarSeries barSeries, Function<Bar, ZonedDateTime> action) {
-        super(barSeries);
-        this.action = action;
+    /**
+     * Constructor.
+     *
+     * @param indicator    the indicator
+     * @param unstableBars the number of first bars of the barSeries to be unstable
+     */
+    public UnstableIndicator(Indicator<Num> indicator, int unstableBars) {
+        super(indicator);
+        this.indicator = indicator;
+        this.unstableBars = unstableBars;
     }
 
     @Override
-    protected ZonedDateTime calculate(int index) {
-        Bar bar = getBarSeries().getBar(index);
-        return this.action.apply(bar);
+    protected Num calculate(int index) {
+        if (index < unstableBars) {
+            return NaN.NaN;
+        }
+        return indicator.getValue(index);
+    }
+
+    @Override
+    public int getUnstableBars() {
+        return unstableBars;
     }
 }

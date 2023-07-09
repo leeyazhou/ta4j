@@ -1,7 +1,7 @@
 /**
  * The MIT License (MIT)
  *
- * Copyright (c) 2017-2022 Ta4j Organization & respective
+ * Copyright (c) 2017-2023 Ta4j Organization & respective
  * authors (see AUTHORS)
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy of
@@ -21,49 +21,39 @@
  * IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN
  * CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
  */
-package org.ta4j.core.indicators;
+package org.ta4j.core.indicators.helpers;
 
 import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertNotEquals;
 
+import java.time.ZonedDateTime;
+import java.time.format.DateTimeFormatter;
+import java.util.Arrays;
+import java.util.List;
 import java.util.function.Function;
 
-import org.junit.Before;
 import org.junit.Test;
+import org.ta4j.core.Bar;
+import org.ta4j.core.BarSeries;
 import org.ta4j.core.Indicator;
-import org.ta4j.core.indicators.helpers.ClosePriceIndicator;
+import org.ta4j.core.indicators.AbstractIndicatorTest;
+import org.ta4j.core.mocks.MockBar;
 import org.ta4j.core.mocks.MockBarSeries;
-import org.ta4j.core.num.NaN;
 import org.ta4j.core.num.Num;
 
-public class UnstableIndicatorTest extends AbstractIndicatorTest<Indicator<Num>, Num> {
+public class DateTimeIndicatorTest extends AbstractIndicatorTest<Indicator<Num>, Num> {
 
-    private int unstablePeriod;
-    private UnstableIndicator unstableIndicator;
+    private static final DateTimeFormatter DATE_TIME_FORMATTER = DateTimeFormatter.ISO_ZONED_DATE_TIME;
 
-    public UnstableIndicatorTest(Function<Number, Num> numFunction) {
+    public DateTimeIndicatorTest(Function<Number, Num> numFunction) {
         super(numFunction);
     }
 
-    @Before
-    public void setUp() {
-        unstablePeriod = 5;
-        unstableIndicator = new UnstableIndicator(new ClosePriceIndicator(new MockBarSeries(numFunction)),
-                unstablePeriod);
-    }
-
     @Test
-    public void indicatorReturnsNanBeforeUnstablePeriod() {
-        for (int i = 0; i < unstablePeriod; i++) {
-            assertEquals(unstableIndicator.getValue(i), NaN.NaN);
-        }
+    public void test() {
+        ZonedDateTime expectedZonedDateTime = ZonedDateTime.parse("2019-09-17T00:04:00-00:00", DATE_TIME_FORMATTER);
+        List<Bar> bars = Arrays.asList(new MockBar(expectedZonedDateTime, 1, numFunction));
+        BarSeries series = new MockBarSeries(bars);
+        DateTimeIndicator dateTimeIndicator = new DateTimeIndicator(series, Bar::getEndTime);
+        assertEquals(expectedZonedDateTime, dateTimeIndicator.getValue(0));
     }
-
-    @Test
-    public void indicatorNotReturnsNanAfterUnstablePeriod() {
-        for (int i = unstablePeriod; i < 10; i++) {
-            assertNotEquals(unstableIndicator.getValue(i), NaN.NaN);
-        }
-    }
-
 }

@@ -1,7 +1,7 @@
 /**
  * The MIT License (MIT)
  *
- * Copyright (c) 2017-2022 Ta4j Organization & respective
+ * Copyright (c) 2017-2023 Ta4j Organization & respective
  * authors (see AUTHORS)
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy of
@@ -54,19 +54,24 @@ public class MassIndexIndicator extends CachedIndicator<Num> {
         super(series);
         Indicator<Num> highLowDifferential = CombineIndicator.minus(new HighPriceIndicator(series),
                 new LowPriceIndicator(series));
-        singleEma = new EMAIndicator(highLowDifferential, emaBarCount);
-        doubleEma = new EMAIndicator(singleEma, emaBarCount); // Not the same formula as DoubleEMAIndicator
+        this.singleEma = new EMAIndicator(highLowDifferential, emaBarCount);
+        this.doubleEma = new EMAIndicator(singleEma, emaBarCount); // Not the same formula as DoubleEMAIndicator
         this.barCount = barCount;
     }
 
     @Override
     protected Num calculate(int index) {
         final int startIndex = Math.max(0, index - barCount + 1);
-        Num massIndex = numOf(0);
+        Num massIndex = zero();
         for (int i = startIndex; i <= index; i++) {
             Num emaRatio = singleEma.getValue(i).dividedBy(doubleEma.getValue(i));
             massIndex = massIndex.plus(emaRatio);
         }
         return massIndex;
+    }
+
+    @Override
+    public int getUnstableBars() {
+        return 0;
     }
 }

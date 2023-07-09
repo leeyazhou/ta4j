@@ -1,7 +1,7 @@
 /**
  * The MIT License (MIT)
  *
- * Copyright (c) 2017-2022 Ta4j Organization & respective
+ * Copyright (c) 2017-2023 Ta4j Organization & respective
  * authors (see AUTHORS)
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy of
@@ -30,21 +30,40 @@ import org.ta4j.core.criteria.AbstractAnalysisCriterion;
 import org.ta4j.core.num.Num;
 
 /**
- * Gross profit criterion (includes trading costs).
+ * Profit criterion with trading costs (= Gross profit) or without ( = Net
+ * profit).
  *
  * <p>
- * The gross profit of the provided {@link Position position(s)} over the
- * provided {@link BarSeries series}.
+ * The profit of the provided {@link Position position(s)} over the provided
+ * {@link BarSeries series}.
  */
-public class GrossProfitCriterion extends AbstractAnalysisCriterion {
+public class ProfitCriterion extends AbstractAnalysisCriterion {
+
+    private final boolean excludeCosts;
+
+    /**
+     * Constructor for GrossProfit (includes trading costs).
+     */
+    public ProfitCriterion() {
+        this(false);
+    }
+
+    /**
+     * Constructor.
+     *
+     * @param excludeTradingCosts set to true to exclude trading costs
+     */
+    public ProfitCriterion(boolean excludeCosts) {
+        this.excludeCosts = excludeCosts;
+    }
 
     @Override
     public Num calculate(BarSeries series, Position position) {
         if (position.isClosed()) {
-            Num profit = position.getGrossProfit();
-            return profit.isPositive() ? profit : series.numOf(0);
+            Num profit = excludeCosts ? position.getProfit() : position.getGrossProfit();
+            return profit.isPositive() ? profit : series.zero();
         }
-        return series.numOf(0);
+        return series.zero();
     }
 
     @Override
@@ -53,10 +72,10 @@ public class GrossProfitCriterion extends AbstractAnalysisCriterion {
                 .stream()
                 .filter(Position::isClosed)
                 .map(position -> calculate(series, position))
-                .reduce(series.numOf(0), Num::plus);
+                .reduce(series.zero(), Num::plus);
     }
 
-    /** The higher the criterion value, the better. */
+    /** The higher the criterion value (= the higher the profit), the better. */
     @Override
     public boolean betterThan(Num criterionValue1, Num criterionValue2) {
         return criterionValue1.isGreaterThan(criterionValue2);

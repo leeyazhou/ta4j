@@ -1,7 +1,7 @@
 /**
  * The MIT License (MIT)
  *
- * Copyright (c) 2017-2022 Ta4j Organization & respective
+ * Copyright (c) 2017-2023 Ta4j Organization & respective
  * authors (see AUTHORS)
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy of
@@ -29,6 +29,9 @@ import org.ta4j.core.num.Num;
 
 /**
  * DX indicator.
+ * 
+ * <p>
+ * Part of the Directional Movement System.
  */
 public class DXIndicator extends CachedIndicator<Num> {
 
@@ -36,21 +39,33 @@ public class DXIndicator extends CachedIndicator<Num> {
     private final PlusDIIndicator plusDIIndicator;
     private final MinusDIIndicator minusDIIndicator;
 
+    /**
+     * Constructor.
+     * 
+     * @param series   the bar series
+     * @param barCount the bar count for {@link #plusDIIndicator} and
+     *                 {@link #minusDIIndicator}
+     */
     public DXIndicator(BarSeries series, int barCount) {
         super(series);
         this.barCount = barCount;
-        plusDIIndicator = new PlusDIIndicator(series, barCount);
-        minusDIIndicator = new MinusDIIndicator(series, barCount);
+        this.plusDIIndicator = new PlusDIIndicator(series, barCount);
+        this.minusDIIndicator = new MinusDIIndicator(series, barCount);
     }
 
     @Override
     protected Num calculate(int index) {
         Num pdiValue = plusDIIndicator.getValue(index);
         Num mdiValue = minusDIIndicator.getValue(index);
-        if (pdiValue.plus(mdiValue).equals(numOf(0))) {
-            return numOf(0);
+        if (pdiValue.plus(mdiValue).equals(zero())) {
+            return zero();
         }
-        return pdiValue.minus(mdiValue).abs().dividedBy(pdiValue.plus(mdiValue)).multipliedBy(numOf(100));
+        return pdiValue.minus(mdiValue).abs().dividedBy(pdiValue.plus(mdiValue)).multipliedBy(hundred());
+    }
+
+    @Override
+    public int getUnstableBars() {
+        return barCount;
     }
 
     @Override

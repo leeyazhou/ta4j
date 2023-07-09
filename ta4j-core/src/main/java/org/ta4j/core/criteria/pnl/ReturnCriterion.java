@@ -1,7 +1,7 @@
 /**
  * The MIT License (MIT)
  *
- * Copyright (c) 2017-2022 Ta4j Organization & respective
+ * Copyright (c) 2017-2023 Ta4j Organization & respective
  * authors (see AUTHORS)
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy of
@@ -30,13 +30,36 @@ import org.ta4j.core.criteria.AbstractAnalysisCriterion;
 import org.ta4j.core.num.Num;
 
 /**
- * Gross return (in percentage) criterion (includes trading costs).
+ * Return (in percentage) criterion (includes trading costs), returned in
+ * decimal format.
  *
  * <p>
- * The gross return of the provided {@link Position position(s)} over the
- * provided {@link BarSeries series}.
+ * The return of the provided {@link Position position(s)} over the provided
+ * {@link BarSeries series}.
  */
-public class GrossReturnCriterion extends AbstractAnalysisCriterion {
+public class ReturnCriterion extends AbstractAnalysisCriterion {
+
+    /**
+     * If true, then the base percentage of {@code 1} (equivalent to 100%) is added
+     * to the criterion value.
+     */
+    private final boolean addBase;
+
+    /**
+     * Constructor with {@link #addBase} == true.
+     */
+    public ReturnCriterion() {
+        this.addBase = true;
+    }
+
+    /**
+     * Constructor.
+     * 
+     * @param addBase the {@link #addBase}
+     */
+    public ReturnCriterion(boolean addBase) {
+        this.addBase = addBase;
+    }
 
     @Override
     public Num calculate(BarSeries series, Position position) {
@@ -48,7 +71,8 @@ public class GrossReturnCriterion extends AbstractAnalysisCriterion {
         return tradingRecord.getPositions()
                 .stream()
                 .map(position -> calculateProfit(series, position))
-                .reduce(series.numOf(1), Num::multipliedBy);
+                .reduce(series.one(), Num::multipliedBy)
+                .minus(addBase ? series.zero() : series.one());
     }
 
     /** The higher the criterion value, the better. */
@@ -68,6 +92,6 @@ public class GrossReturnCriterion extends AbstractAnalysisCriterion {
         if (position.isClosed()) {
             return position.getGrossReturn(series);
         }
-        return series.numOf(1);
+        return addBase ? series.one() : series.zero();
     }
 }

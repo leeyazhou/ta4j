@@ -1,7 +1,7 @@
 /**
  * The MIT License (MIT)
  *
- * Copyright (c) 2017-2022 Ta4j Organization & respective
+ * Copyright (c) 2017-2023 Ta4j Organization & respective
  * authors (see AUTHORS)
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy of
@@ -21,31 +21,12 @@
  * IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN
  * CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
  */
-package org.ta4j.core.indicators;
-
-import org.ta4j.core.Indicator;
-import org.ta4j.core.num.NaN;
-import org.ta4j.core.num.Num;
-
 /**
- * Indicator that returns NaN in unstable period
+ * Aggregator.
+ *
+ * <p>
+ * This package can be used to aggregate {@link org.ta4j.core.Bar bars} by
+ * various conditions, e.g. by
+ * {@link org.ta4j.core.aggregator.DurationBarAggregator duration}.
  */
-public class UnstableIndicator extends CachedIndicator<Num> {
-
-    private final int unstablePeriod;
-    private final Indicator<Num> indicator;
-
-    public UnstableIndicator(Indicator<Num> indicator, int unstablePeriod) {
-        super(indicator);
-        this.indicator = indicator;
-        this.unstablePeriod = unstablePeriod;
-    }
-
-    @Override
-    protected Num calculate(int index) {
-        if (index < unstablePeriod) {
-            return NaN.NaN;
-        }
-        return indicator.getValue(index);
-    }
-}
+package org.ta4j.core.aggregator;
